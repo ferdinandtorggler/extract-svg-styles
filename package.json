@@ -1,5 +1,5 @@
 {
-  "name": "extract-svg-colors",
+  "name": "extract-svg-styles",
   "version": "0.0.1",
   "description": "Extract SVG element's <style> tags to files.",
   "main": "index.js",

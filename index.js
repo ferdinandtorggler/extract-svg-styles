@@ -31,7 +31,7 @@ function className (filepath) {
 
 function writeFile (name, contents, cb) {
     mkdirp(path.dirname(name), function () {
-        fs.writeFile(name, contents, cb());
+        fs.writeFile(name, contents, cb);
     });
 }
 
