@@ -6,27 +6,50 @@ var through2 = require('through2');
 var cheerio = require('cheerio');
 var mkdirp = require('mkdirp');
 var path = require('path');
+var css = require('css');
 var _ = require('lodash');
 
 var opt;
 var defaults = {
     src: false,
-    out: false,
-    extension: 'css'
+    out: {
+        svg: false,
+        style: false
+    },
+    extension: 'css',
+    classPrefix: 'svg-'
 };
 
-function writeFiles (file, enc, cb) {
+
+function fileName (fullPath) {
+    return path.basename(fullPath, path.extname(fullPath));
+}
+
+function writeFile (name, contents, cb) {
+    mkdirp(path.dirname(name), function () {
+        fs.writeFile(name, contents, cb());
+    });
+}
+
+function writeCSS (file, enc, cb) {
     var stream = this;
-    mkdirp(opt.out, function () {
-        var identifier = path.basename(file.path, path.extname(file.path));
-        var destination = path.join(opt.out, identifier + '.' + opt.extension);
+    mkdirp(opt.out.style, function () {
+        var destination = path.join(opt.out.style, fileName(file.path) + '.' + opt.extension);
+        stream.push(file);
         if (file.contents) {
-            fs.writeFile(destination, file.contents, function () {
-                stream.push(file);
-                cb();
-            });
+            writeFile(destination, file.contents, cb);
         }
     });
+}
+
+function cssPrefix (prefix, contents) {
+    var parsed = css.parse(contents);
+    _.forEach(parsed.stylesheet.rules, function (rule) {
+        rule.selectors = _.map(rule.selectors, function (selector) {
+            return prefix + ' ' + selector;
+        });
+    });
+    return css.stringify(parsed);
 }
 
 function format (file, enc, cb) {
@@ -38,9 +61,13 @@ function extractStyles (file, enc, cb) {
     var $ = cheerio.load(file.contents);
     var styleBlocks = $('style');
     var extractedStyle = styleBlocks.text();
+    var className = opt.classPrefix + fileName(file.path);
+    $('svg').addClass(className);
+    var destination = path.join(opt.out.svg, path.basename(file.path));
+    writeFile(destination, new Buffer($.html()), cb);
+    extractedStyle = cssPrefix('.' + className, extractedStyle);
     file.contents = extractedStyle ? new Buffer(extractedStyle) : null;
     this.push(file);
-    cb();
 }
 
 module.exports = function (options) {
@@ -49,5 +76,5 @@ module.exports = function (options) {
 
     vfs.src(opt.src)
     .pipe(through2.obj(extractStyles))
-    .pipe(through2.obj(writeFiles));
+    .pipe(through2.obj(writeCSS));
 };
