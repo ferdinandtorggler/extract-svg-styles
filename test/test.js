@@ -5,5 +5,6 @@ extractColors({
     out: {
         style: './test/dest/css',
         svg: './test/dest/svg'
-    }
+    },
+    classPrefix: 'icon-'
 });

@@ -10,5 +10,15 @@
     "svg",
     "styles"
   ],
-  "author": "Ferdinand Torggler"
+  "author": "Ferdinand Torggler",
+  "dependencies": {
+    "cheerio": "^0.19.0",
+    "css": "^2.2.0",
+    "graceful-fs": "^3.0.6",
+    "lodash": "^3.6.0",
+    "mkdirp": "^0.5.0",
+    "path": "^0.11.14",
+    "through2": "^0.6.3",
+    "vinyl-fs": "^1.0.0"
+  }
 }

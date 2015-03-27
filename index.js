@@ -17,12 +17,16 @@ var defaults = {
         style: false
     },
     extension: 'css',
-    classPrefix: 'svg-'
+    classPrefix: ''
 };
 
 
-function fileName (fullPath) {
+function identifier (fullPath) {
     return path.basename(fullPath, path.extname(fullPath));
+}
+
+function className (filepath) {
+    return opt.classPrefix + identifier(filepath);
 }
 
 function writeFile (name, contents, cb) {
@@ -31,18 +35,19 @@ function writeFile (name, contents, cb) {
     });
 }
 
-function writeCSS (file, enc, cb) {
-    var stream = this;
-    mkdirp(opt.out.style, function () {
-        var destination = path.join(opt.out.style, fileName(file.path) + '.' + opt.extension);
-        stream.push(file);
-        if (file.contents) {
-            writeFile(destination, file.contents, cb);
-        }
-    });
+function writeSVG (name, contents, cb) {
+    var destination = path.join(opt.out.svg, path.basename(name))
+    writeFile(destination, contents, cb);
 }
 
-function cssPrefix (prefix, contents) {
+function writeCSS (file, enc, cb) {
+    var destination = path.join(opt.out.style, identifier(file.path) + '.' + opt.extension);
+    if (file.contents) {
+        writeFile(destination, file.contents, cb);
+    }
+}
+
+function nestCSS (prefix, contents) {
     var parsed = css.parse(contents);
     _.forEach(parsed.stylesheet.rules, function (rule) {
         rule.selectors = _.map(rule.selectors, function (selector) {
@@ -52,29 +57,33 @@ function cssPrefix (prefix, contents) {
     return css.stringify(parsed);
 }
 
-function format (file, enc, cb) {
-    this.push(file);
-    cb();
+function extractStyle (file) {
+    var $ = cheerio.load(file.contents);
+    var styleBlocks = $('style');
+    return styleBlocks.text();
+}
+
+function classedSVG (file) {
+    var $ = cheerio.load(file.contents);
+    $('svg').addClass(className(file.path));
+    return $.html();
 }
 
 function extractStyles (file, enc, cb) {
-    var $ = cheerio.load(file.contents);
-    var styleBlocks = $('style');
-    var extractedStyle = styleBlocks.text();
-    var className = opt.classPrefix + fileName(file.path);
-    $('svg').addClass(className);
-    var destination = path.join(opt.out.svg, path.basename(file.path));
-    writeFile(destination, new Buffer($.html()), cb);
-    extractedStyle = cssPrefix('.' + className, extractedStyle);
-    file.contents = extractedStyle ? new Buffer(extractedStyle) : null;
+    var finished = _.after(2, cb);
+
+    var styleText = nestCSS('.' + className(file.path), extractStyle(file));
+    writeSVG(file.path, new Buffer(classedSVG(file)), finished);
+
+    file.contents = styleText ? new Buffer(styleText) : null;
+    writeCSS(file, enc, finished);
+
     this.push(file);
 }
 
 module.exports = function (options) {
-    
     opt = _.assign(defaults, options);
 
     vfs.src(opt.src)
-    .pipe(through2.obj(extractStyles))
-    .pipe(through2.obj(writeCSS));
+    .pipe(through2.obj(extractStyles));
 };
