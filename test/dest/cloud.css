@@ -1,0 +1,16 @@
+
+
+            path {
+                fill: blue;
+                stroke: black;
+                stroke-width: 3;
+                width: 100px;
+            }
+
+        
+
+            path.test {
+                width: 100%;
+            }
+
+        
