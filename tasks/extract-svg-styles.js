@@ -7,7 +7,6 @@ module.exports = function(grunt) {
 
   grunt.registerMultiTask('extract-svg-styles', 'Grunt task for extacting <style> tags from SVGs.', function () {
 
-
     var done = this.async();
 
     var options = this.options();

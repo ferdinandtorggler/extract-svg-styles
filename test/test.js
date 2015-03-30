@@ -1,6 +1,6 @@
-var extractColors = require('../index.js');
+var extract = require('../index.js');
 
-extractColors({
+extract({
     src: './test/src/**/*.svg',
     out: {
         style: './test/dest/css',

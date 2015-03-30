@@ -20,7 +20,7 @@ var defaults = {
     classPrefix: ''
 };
 
-
+// File name without extension
 function identifier (fullPath) {
     return path.basename(fullPath, path.extname(fullPath));
 }

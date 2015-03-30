@@ -2,13 +2,18 @@
   "name": "extract-svg-styles",
   "version": "0.0.1",
   "description": "Extract SVG element's <style> tags to files.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ferdinandtorggler/extract-svg-styles.git"
+  },
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
     "svg",
-    "styles"
+    "styles",
+    "gruntplugin"
   ],
   "author": "Ferdinand Torggler",
   "dependencies": {
