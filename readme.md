@@ -1,5 +1,7 @@
 # extract-svg-styles
 
+[![npm version](https://badge.fury.io/js/extract-svg-styles.svg)](http://badge.fury.io/js/extract-svg-styles)
+
 > Extract &lt;style&gt; definitions from an SVG file to a CSS file.
 
 For each SVG file a CSS file will be generated, containing the CSS-rules
