@@ -70,6 +70,6 @@ module.exports = function(grunt) {
 }
 ```
 
-Options to use `extract-svg-styles` with [Gulp](http://gulpjs.com) are the same as for the `extract` function with the exception of `src` and `out`.
+Options to use `extract-svg-styles` with [Grunt](http://gruntjs.com) are the same as for the `extract` function with the exception of `src` and `out`.
 
 `out.style` is `styleDest` in Grunt, `out.svg` is the regular Grunt `dest` property.
