@@ -81,9 +81,9 @@ function extractStyles (file, enc, cb) {
     this.push(file);
 }
 
-module.exports = function (options) {
+module.exports = function (options, done) {
     opt = _.assign(defaults, options);
 
     vfs.src(opt.src)
-    .pipe(through2.obj(extractStyles));
+    .pipe(through2.obj(extractStyles, done));
 };
