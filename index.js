@@ -73,7 +73,9 @@ function extractStyles (file, enc, cb) {
     var finished = _.after(2, cb);
 
     var styleText = nestCSS('.' + className(file.path), extractStyle(file));
-    writeSVG(file.path, new Buffer(classedSVG(file)), finished);
+    if (opt.out.svg) {
+        writeSVG(file.path, new Buffer(classedSVG(file)), finished);
+    }
 
     file.contents = styleText ? new Buffer(styleText) : null;
     writeCSS(file, enc, finished);

@@ -25,8 +25,8 @@ extract(options);
 ### Options
 - **src**: Glob string with path to source SVGs
 - **out**: Output directories
-  - **svg**: Output directories for SVGs
-  - **style**: Output directories for Stylesheets
+  - **svg**: Output directory for SVGs (optional)
+  - **style**: Output directory for Stylesheets
 - **extension**: File name extension for Stylesheets (default is ‘css’, useful for ’scss’)
 - **classPrefix**: Prefix for class names to target SVGs
 
@@ -73,3 +73,4 @@ module.exports = function(grunt) {
 Options to use `extract-svg-styles` with [Grunt](http://gruntjs.com) are the same as for the `extract` function with the exception of `src` and `out`.
 
 `out.style` is `styleDest` in Grunt, `out.svg` is the regular Grunt `dest` property.
+If `dest` is omitted, only the stylesheets will be generated.
