@@ -17,7 +17,7 @@ npm install extract-svg-styles --save
 
 ## Usage
 
-```
+```javascript
 var extractSvg = require(‘extract-svg-styles’);
 extractSvg.extract(options);
 ```
@@ -34,7 +34,7 @@ extractSvg.extract(options);
 ### Example
 
 Usage with an exapmle configuration object:
-```
+```javascript
 extractSvg.extract({
     src: './test/src/**/*.svg',
     out: {
@@ -49,7 +49,7 @@ extractSvg.extract({
 
 This module can also be used in automated tasks using Grunt.
 
-```
+```javascript
 module.exports = function(grunt) {
 
     grunt.initConfig({
