@@ -18,8 +18,8 @@ npm install extract-svg-styles --save
 ## Usage
 
 ```
-var extract = require(‘extract-svg-styles’);
-extract(options);
+var extractSvg = require(‘extract-svg-styles’);
+extractSvg.extract(options);
 ```
 
 ### Options
@@ -35,7 +35,7 @@ extract(options);
 
 Usage with an exapmle configuration object:
 ```
-extract({
+extractSvg.extract({
     src: './test/src/**/*.svg',
     out: {
         style: './test/dest/css',
@@ -75,3 +75,27 @@ Options to use `extract-svg-styles` with [Grunt](http://gruntjs.com) are the sam
 
 `out.style` is `styleDest` in Grunt, `out.svg` is the regular Grunt `dest` property.
 If `dest` is omitted, only the stylesheets will be generated.
+
+## Usage with [Gulp](http://gulpjs.com/)
+
+This module can also be used in automated tasks using Gulp. Make sure to require the `stream` object of the plugin as in the example below:
+
+```javascript
+var gulp = require('gulp');
+var extractSvg = require('./index.js').stream;
+
+gulp.task('extract-svg-styles', function () {
+    gulp.src('./test/src/**/*.svg')
+    .pipe(extractSvg.extract({
+        styleDest: './test/dest/css',
+        classPrefix: 'icon-',
+        idHandling: 'class'
+    }))
+    .pipe(gulp.dest('./test/dest/svg'));
+});
+
+gulp.task('default', ['extract-svg-styles']);
+```
+
+Options to use with [Gulp](http://gulpjs.com/) are the same as for the extract method with the exception of `src` and `out`. 
+Use `gulp.src` and `gulp.dest` instead, `styleDest` is used to specify the output directory for the stylesheets. 

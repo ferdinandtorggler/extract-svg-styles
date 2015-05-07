@@ -1,6 +1,6 @@
 'use strict';
 
-var extract = require('../index');
+var extractor = require('../index');
 var path = require('path');
 
 module.exports = function(grunt) {
@@ -17,7 +17,7 @@ module.exports = function(grunt) {
       style: options.styleDest
     };
 
-    extract(options, done);
+    extractor.extract(options, done);
 
   });
 

@@ -1,6 +1,6 @@
-var extract = require('../index.js');
+var extractSvg = require('../index.js');
 
-extract({
+extractSvg.extract({
     src: './test/src/**/*.svg',
     out: {
         style: './test/dest/css',

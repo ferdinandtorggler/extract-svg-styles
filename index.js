@@ -10,6 +10,7 @@ var css = require('css');
 var _ = require('lodash');
 
 var opt;
+var streaming = false;
 var defaults = {
     src: false,
     out: {
@@ -41,10 +42,10 @@ function writeSVG (name, contents, cb) {
     writeFile(destination, contents, cb);
 }
 
-function writeCSS (file, enc, cb) {
-    var destination = path.join(opt.out.style, identifier(file.path) + '.' + opt.extension);
-    if (file.contents) {
-        writeFile(destination, file.contents, cb);
+function writeCSS (svgPath, contents, cb) {
+    var destination = path.join(opt.out.style, identifier(svgPath) + '.' + opt.extension);
+    if (contents) {
+        writeFile(destination, contents, cb);
     }
 }
 
@@ -92,17 +93,37 @@ function extractStyles (file, enc, cb) {
     handleIDs(file);
     if (opt.out.svg) {
         writeSVG(file.path, new Buffer(classedSVG(file, styleText)), finished);
+    } else {
+        file.contents = new Buffer(classedSVG(file, styleText));
+        finished();
     }
 
-    file.contents = styleText ? new Buffer(styleText) : null;
-    writeCSS(file, enc, finished);
+    writeCSS(file.path, (styleText ? new Buffer(styleText) : null), finished);
 
     this.push(file);
 }
 
-module.exports = function (options, done) {
-    opt = _.assign(defaults, options);
+function prepareOptions (options) {
+    return _.assign(defaults, options);
+}
+
+var stream = {
+    extract: function (options) {
+        streaming = true;
+        opt = prepareOptions(options);
+        opt.out.style = options.styleDest;
+        return through2.obj(extractStyles);
+    }
+};
+
+var run = function (options, done) {
+    opt = prepareOptions(options);
 
     vfs.src(opt.src)
-    .pipe(through2.obj(extractStyles, done));
+        .pipe(through2.obj(extractStyles, done));
+};
+
+module.exports = {
+    extract: run,
+    stream: stream
 };
