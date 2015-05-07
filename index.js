@@ -17,7 +17,8 @@ var defaults = {
         style: false
     },
     extension: 'css',
-    classPrefix: ''
+    classPrefix: '',
+    idHandling: 'none' // 'none', 'class', 'remove'
 };
 
 // File name without extension
@@ -57,6 +58,20 @@ function nestCSS (prefix, contents) {
     return css.stringify(parsed);
 }
 
+function handleIDs (file) {
+    if (opt.idHandling === 'none') return;
+    var $ = cheerio.load(file.contents);
+    $('[id]').each(function (index, item) {
+        var $item = $(item);
+        var id = $item.attr('id');
+        $item.removeAttr('id');
+        if (opt.idHandling === 'class') {
+            $item.addClass(id);
+        }
+    });
+    file.contents = new Buffer($.html());
+}
+
 function extractStyle (file) {
     var $ = cheerio.load(file.contents);
     var styleBlocks = $('style');
@@ -74,6 +89,7 @@ function extractStyles (file, enc, cb) {
     var finished = _.after(2, cb);
 
     var styleText = nestCSS('.' + className(file.path), extractStyle(file));
+    handleIDs(file);
     if (opt.out.svg) {
         writeSVG(file.path, new Buffer(classedSVG(file, styleText)), finished);
     }

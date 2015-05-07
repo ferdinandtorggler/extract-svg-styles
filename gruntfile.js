@@ -5,6 +5,7 @@ module.exports = function(grunt) {
             options: {
                 styleDest: './test/dest/css',
                 classPrefix: 'icon-',
+                idHandling: 'remove'
             },
             all: {
                 src: './test/src/**/*.svg',
