@@ -63,9 +63,10 @@ function extractStyle (file) {
     return styleBlocks.text();
 }
 
-function classedSVG (file) {
+function classedSVG (file, styles) {
     var $ = cheerio.load(file.contents);
     $('svg').addClass(className(file.path));
+    $('style').text(styles);
     return $.html();
 }
 
@@ -74,7 +75,7 @@ function extractStyles (file, enc, cb) {
 
     var styleText = nestCSS('.' + className(file.path), extractStyle(file));
     if (opt.out.svg) {
-        writeSVG(file.path, new Buffer(classedSVG(file)), finished);
+        writeSVG(file.path, new Buffer(classedSVG(file, styleText)), finished);
     }
 
     file.contents = styleText ? new Buffer(styleText) : null;
