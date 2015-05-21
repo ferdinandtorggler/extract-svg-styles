@@ -19,7 +19,13 @@ var defaults = {
     },
     extension: 'css',
     classPrefix: '',
-    idHandling: 'none' // 'none', 'class', 'remove'
+    idHandling: 'none' // 'none', 'class', 'remove', 'prefix'
+};
+
+var cherioOpts = {
+    xmlMode: false,
+    lowerCaseTags: false,   // don't change the camelCase tag- and attribute names, since chrome only respects camels!
+    lowerCaseAttributeNames: false // s.a.
 };
 
 // File name without extension
@@ -38,7 +44,7 @@ function writeFile (name, contents, cb) {
 }
 
 function writeSVG (name, contents, cb) {
-    var destination = path.join(opt.out.svg, path.basename(name))
+    var destination = path.join(opt.out.svg, path.basename(name));
     writeFile(destination, contents, cb);
 }
 
@@ -59,18 +65,51 @@ function nestCSS (prefix, contents) {
     return css.stringify(parsed);
 }
 
+function prefixIdOfElem ($elem, id, file, replacedIds) {
+    var prefixedId = identifier(file.path) + '-' + id;
+    $elem.attr('id', prefixedId);
+    replacedIds[id] = prefixedId;
+}
+
+function removeCDATA (file) {
+    var content = file.contents.toString().replace('<![CDATA[', '');
+    content = content.replace(']]>', '');
+    file.contents = new Buffer(content);
+}
+
 function handleIDs (file) {
     if (opt.idHandling === 'none') return;
-    var $ = cheerio.load(file.contents);
+    var replacedIds = {};
+    var editedFileContent;
+    var $ = cheerio.load(file.contents, cherioOpts);
     $('[id]').each(function (index, item) {
         var $item = $(item);
         var id = $item.attr('id');
-        $item.removeAttr('id');
-        if (opt.idHandling === 'class') {
-            $item.addClass(id);
+        switch (opt.idHandling) {
+            case 'class' :
+                // do not remove ids of gradients since they are targeted from styles via "fill: url(#id)"
+                if($item[0].tagName.toLowerCase().indexOf('gradient') >= 0 ) {
+                    prefixIdOfElem($item, id, file, replacedIds);
+                }
+                else{
+                    $item.addClass(id);
+                    $item.removeAttr('id');
+                }
+                break;
+            case 'remove' :
+                $item.removeAttr('id');
+                break;
+            case 'prefix' :
+                prefixIdOfElem($item, id, file, replacedIds);
+                break;
         }
     });
-    file.contents = new Buffer($.html());
+
+    editedFileContent = $.html();
+    for(var oldId in replacedIds) {
+        editedFileContent = editedFileContent.replace('#'+oldId, '#'+replacedIds[oldId]);
+    }
+    file.contents = new Buffer(editedFileContent);
 }
 
 function extractStyle (file) {
@@ -80,7 +119,7 @@ function extractStyle (file) {
 }
 
 function classedSVG (file, styles) {
-    var $ = cheerio.load(file.contents);
+    var $ = cheerio.load(file.contents, cherioOpts);
     $('svg').addClass(className(file.path));
     $('style').text(styles);
     return $.html();
@@ -88,9 +127,10 @@ function classedSVG (file, styles) {
 
 function extractStyles (file, enc, cb) {
     var finished = _.after(2, cb);
-
-    var styleText = nestCSS('.' + className(file.path), extractStyle(file));
+    removeCDATA(file);
     handleIDs(file);
+    var styleText = nestCSS('.' + className(file.path), extractStyle(file));
+
     if (opt.out.svg) {
         writeSVG(file.path, new Buffer(classedSVG(file, styleText)), finished);
     } else {
