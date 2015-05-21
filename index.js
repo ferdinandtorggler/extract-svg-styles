@@ -23,9 +23,10 @@ var defaults = {
 };
 
 var cherioOpts = {
-    xmlMode: false,
+    xmlMode: true,
     lowerCaseTags: false,   // don't change the camelCase tag- and attribute names, since chrome only respects camels!
-    lowerCaseAttributeNames: false // s.a.
+    lowerCaseAttributeNames: false, // s.a.
+    recognizeCDATA: true
 };
 
 // File name without extension
@@ -113,7 +114,7 @@ function handleIDs (file) {
 }
 
 function extractStyle (file) {
-    var $ = cheerio.load(file.contents);
+    var $ = cheerio.load(file.contents, cherioOpts);
     var styleBlocks = $('style');
     return styleBlocks.text();
 }
@@ -127,7 +128,6 @@ function classedSVG (file, styles) {
 
 function extractStyles (file, enc, cb) {
     var finished = _.after(2, cb);
-    removeCDATA(file);
     handleIDs(file);
     var styleText = nestCSS('.' + className(file.path), extractStyle(file));
 
