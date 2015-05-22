@@ -74,16 +74,21 @@ function prefixIdOfElem ($elem, id, file, replacedIds) {
 
 function handleIDs (file) {
     if (opt.idHandling === 'none') return;
+    var referencedIds = file.contents.toString().match(/url\(('|")*#.+('|")*\)/g) || [];
     var replacedIds = {};
     var editedFileContent;
     var $ = cheerio.load(file.contents, cheerioOpts);
+    referencedIds.forEach(function (elem, idx, arr) {
+        elem =  elem.replace(/url\(('|")*#/g);
+        arr[idx] = elem.replace(/('|")*\)/g);
+    });
     $('[id]').each(function (index, item) {
         var $item = $(item);
         var id = $item.attr('id');
         switch (opt.idHandling) {
             case 'class' :
-                // do not remove ids of gradients since they are targeted from styles via "fill: url(#id)"
-                if($item[0].tagName.toLowerCase().indexOf('gradient') >= 0 ) {
+                // do not remove ids that are targeted from styles via "url(#id)"
+                if(referencedIds.indexOf(id)) {
                     prefixIdOfElem($item, id, file, replacedIds);
                 }
                 else{
@@ -102,7 +107,7 @@ function handleIDs (file) {
 
     editedFileContent = $.html();
     for(var oldId in replacedIds) {
-        editedFileContent = editedFileContent.replace('#'+oldId, '#'+replacedIds[oldId]);
+        editedFileContent = editedFileContent.replace('#' + oldId, '#' + replacedIds[oldId]);
     }
     file.contents = new Buffer(editedFileContent);
 }
