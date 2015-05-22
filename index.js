@@ -77,7 +77,7 @@ function handleIDs (file) {
     var referencedIds = file.contents.toString().match(/url\(('|")*#.+('|")*\)/g) || [];
     var replacedIds = {};
     var editedFileContent;
-    var $ = cheerio.load(file.contents, cherioOpts);
+    var $ = cheerio.load(file.contents, cheerioOpts);
     referencedIds.forEach(function (elem, idx, arr) {
         elem =  elem.replace(/url\(('|")*#/g);
         arr[idx] = elem.replace(/('|")*\)/g);
