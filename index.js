@@ -72,12 +72,6 @@ function prefixIdOfElem ($elem, id, file, replacedIds) {
     replacedIds[id] = prefixedId;
 }
 
-function removeCDATA (file) {
-    var content = file.contents.toString().replace('<![CDATA[', '');
-    content = content.replace(']]>', '');
-    file.contents = new Buffer(content);
-}
-
 function handleIDs (file) {
     if (opt.idHandling === 'none') return;
     var replacedIds = {};

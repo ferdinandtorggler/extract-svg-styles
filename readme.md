@@ -29,7 +29,7 @@ extractSvg.extract(options);
   - **style**: Output directory for Stylesheets
 - **extension**: File name extension for Stylesheets (default is ‘css’, useful for ’scss’)
 - **classPrefix**: Prefix for class names to target SVGs
-- **idHandling**: `none` Avoid ID collisions when using multiple SVGs in a page. `class` will transform the IDs to a class, `remove` will get rid of the IDs.
+- **idHandling**: `none` Avoid ID collisions when using multiple SVGs in a page. `class` will transform the IDs to a class, `remove` will get rid of the IDs, `prefix` will keep the IDs but prefix them with the file name.
 
 ### Example
 
