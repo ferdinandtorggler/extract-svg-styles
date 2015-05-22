@@ -53,6 +53,8 @@ function writeCSS (svgPath, contents, cb) {
     var destination = path.join(opt.out.style, identifier(svgPath) + '.' + opt.extension);
     if (contents) {
         writeFile(destination, contents, cb);
+    } else {
+        cb();
     }
 }
 
