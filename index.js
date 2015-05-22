@@ -22,7 +22,7 @@ var defaults = {
     idHandling: 'none' // 'none', 'class', 'remove', 'prefix'
 };
 
-var cherioOpts = {
+var cheerioOpts = {
     xmlMode: true,
     lowerCaseTags: false,   // don't change the camelCase tag- and attribute names, since chrome only respects camels!
     lowerCaseAttributeNames: false, // s.a.
@@ -82,7 +82,7 @@ function handleIDs (file) {
     if (opt.idHandling === 'none') return;
     var replacedIds = {};
     var editedFileContent;
-    var $ = cheerio.load(file.contents, cherioOpts);
+    var $ = cheerio.load(file.contents, cheerioOpts);
     $('[id]').each(function (index, item) {
         var $item = $(item);
         var id = $item.attr('id');
@@ -114,13 +114,13 @@ function handleIDs (file) {
 }
 
 function extractStyle (file) {
-    var $ = cheerio.load(file.contents, cherioOpts);
+    var $ = cheerio.load(file.contents, cheerioOpts);
     var styleBlocks = $('style');
     return styleBlocks.text();
 }
 
 function classedSVG (file, styles) {
-    var $ = cheerio.load(file.contents, cherioOpts);
+    var $ = cheerio.load(file.contents, cheerioOpts);
     $('svg').addClass(className(file.path));
     $('style').text(styles);
     return $.html();
