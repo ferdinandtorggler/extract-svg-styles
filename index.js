@@ -90,7 +90,7 @@ function handleIDs (file) {
         switch (opt.idHandling) {
             case 'class' :
                 // do not remove ids that are targeted from styles via "url(#id)"
-                if(referencedIds.indexOf(id)) {
+                if (referencedIds.indexOf(id) >= 0) {
                     prefixIdOfElem($item, id, file, replacedIds);
                 }
                 else{
