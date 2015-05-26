@@ -81,8 +81,8 @@ function handleIDs (file) {
     var editedFileContent;
     var $ = cheerio.load(file.contents, cheerioOpts);
     referencedIds.forEach(function (elem, idx, arr) {
-        elem =  elem.replace(/url\(('|")*#/g);
-        arr[idx] = elem.replace(/('|")*\)/g);
+        elem =  elem.replace(/url\(('|")*#/g, '');
+        arr[idx] = elem.replace(/('|")*\)/g, '');
     });
     $('[id]').each(function (index, item) {
         var $item = $(item);
