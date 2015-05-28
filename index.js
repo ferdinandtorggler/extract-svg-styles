@@ -4,6 +4,7 @@ var vfs = require('vinyl-fs');
 var fs = require('graceful-fs');
 var through2 = require('through2');
 var cheerio = require('cheerio');
+var juice = require('juice');
 var mkdirp = require('mkdirp');
 var path = require('path');
 var css = require('css');
@@ -20,7 +21,8 @@ var defaults = {
     extension: 'css',
     classPrefix: '',
     idHandling: 'none', // 'none', 'class', 'remove', 'prefix'
-    removeStyleTags: false
+    removeStyleTags: false,
+    inlineURLStyles: true
 };
 
 var cheerioOpts = {
@@ -112,6 +114,19 @@ function handleIDs (file) {
     for(var oldId in replacedIds) {
         editedFileContent = editedFileContent.replace('#' + oldId, '#' + replacedIds[oldId]);
     }
+
+
+    if (referencedIds.length >= 0 && opt.inlineURLStyles) {
+        // inline styles referencing ids
+        var selectorsWithUrls = editedFileContent.match(/(.)*{(\s)*(\w)*(\s)*:(\s)*url\(('|")*#.+('|")*\)(\s)*;*(\s)*}/g);
+        if (selectorsWithUrls) {
+            console.log('inline styles', selectorsWithUrls[0]);
+            editedFileContent = juice.inlineContent(editedFileContent, selectorsWithUrls[0]);
+        }
+
+    }
+
+
     file.contents = new Buffer(editedFileContent);
 }
 
@@ -125,6 +140,7 @@ function classedSVG (file, styles, removeStyleTags) {
     var $ = cheerio.load(file.contents, cheerioOpts),
         styleTags = $('style');
     $('svg').addClass(className(file.path));
+
     removeStyleTags ? styleTags.remove() : styleTags.text(styles);
     return $.html();
 }
