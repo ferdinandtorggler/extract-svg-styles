@@ -19,7 +19,8 @@ var defaults = {
     },
     extension: 'css',
     classPrefix: '',
-    idHandling: 'none' // 'none', 'class', 'remove', 'prefix'
+    idHandling: 'none', // 'none', 'class', 'remove', 'prefix'
+    removeStyleTags: false
 };
 
 var cheerioOpts = {
@@ -120,10 +121,11 @@ function extractStyle (file) {
     return styleBlocks.text();
 }
 
-function classedSVG (file, styles) {
-    var $ = cheerio.load(file.contents, cheerioOpts);
+function classedSVG (file, styles, removeStyleTags) {
+    var $ = cheerio.load(file.contents, cheerioOpts),
+        styleTags = $('style');
     $('svg').addClass(className(file.path));
-    $('style').text(styles);
+    removeStyleTags ? styleTags.remove() : styleTags.text(styles);
     return $.html();
 }
 
@@ -133,9 +135,9 @@ function extractStyles (file, enc, cb) {
     var styleText = nestCSS('.' + className(file.path), extractStyle(file));
 
     if (opt.out.svg) {
-        writeSVG(file.path, new Buffer(classedSVG(file, styleText)), finished);
+        writeSVG(file.path, new Buffer(classedSVG(file, styleText, opt.removeStyleTags)), finished);
     } else {
-        file.contents = new Buffer(classedSVG(file, styleText));
+        file.contents = new Buffer(classedSVG(file, styleText, opt.removeStyleTags));
         finished();
     }
 
