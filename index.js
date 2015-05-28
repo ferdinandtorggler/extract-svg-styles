@@ -118,12 +118,13 @@ function handleIDs (file) {
 
     if (referencedIds.length >= 0 && opt.inlineURLStyles) {
         // inline styles referencing ids
-        var selectorsWithUrls = editedFileContent.match(/(.)*{(\s)*(\w)*(\s)*:(\s)*url\(('|")*#.+('|")*\)(\s)*;*(\s)*}/g);
+        var regExForSelectorsWithUrls = /(.)*\{(\s)*(\w)*(\s)*:(\s)*url\(('|")*#.+('|")*\)(\s)*;*(\s)*}/g;
+        var selectorsWithUrls = editedFileContent.match(regExForSelectorsWithUrls);
+        editedFileContent = editedFileContent.replace(regExForSelectorsWithUrls, '');
         if (selectorsWithUrls) {
             console.log('inline styles', selectorsWithUrls[0]);
             editedFileContent = juice.inlineContent(editedFileContent, selectorsWithUrls[0]);
         }
-
     }
 
 
