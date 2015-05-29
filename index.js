@@ -19,14 +19,16 @@ var defaults = {
         style: false
     },
     extension: 'css',
+    prefix: '',
     classPrefix: '',
+    styledSelectorPrefix: '',
     idHandling: 'none', // 'none', 'class', 'remove', 'prefix'
     removeStyleTags: false,
     inlineURLStyles: true
 };
 
 var cheerioOpts = {
-    xmlMode: true,
+    xmlMode: false,
     lowerCaseTags: false,   // don't change the camelCase tag- and attribute names, since chrome only respects camels!
     lowerCaseAttributeNames: false, // s.a.
     recognizeCDATA: true
@@ -53,7 +55,7 @@ function writeSVG (name, contents, cb) {
 }
 
 function writeCSS (svgPath, contents, cb) {
-    var destination = path.join(opt.out.style, identifier(svgPath) + '.' + opt.extension);
+    var destination = path.join(opt.out.style, opt.prefix + identifier(svgPath) + '.' + opt.extension);
     if (contents) {
         writeFile(destination, contents, cb);
     } else {
@@ -65,7 +67,7 @@ function nestCSS (prefix, contents) {
     var parsed = css.parse(contents);
     _.forEach(parsed.stylesheet.rules, function (rule) {
         rule.selectors = _.map(rule.selectors, function (selector) {
-            return prefix + ' ' + selector;
+            return opt.styledSelectorPrefix + prefix + ' ' + selector;
         });
     });
     return css.stringify(parsed);
@@ -123,7 +125,7 @@ function handleIDs (file) {
         editedFileContent = editedFileContent.replace(regExForSelectorsWithUrls, '');
         if (selectorsWithUrls) {
             console.log('inline styles', selectorsWithUrls[0]);
-            editedFileContent = juice.inlineContent(editedFileContent, selectorsWithUrls[0]);
+            editedFileContent = juice.inlineContent(editedFileContent, selectorsWithUrls[0], {xmlMode:true});
         }
     }
 
@@ -158,7 +160,11 @@ function extractStyles (file, enc, cb) {
         finished();
     }
 
-    writeCSS(file.path, (styleText ? new Buffer(styleText) : null), finished);
+    if(opt.out.style) {
+        writeCSS(file.path, (styleText ? new Buffer(styleText) : null), finished);
+    } else {
+        finished();
+    }
 
     this.push(file);
 }
