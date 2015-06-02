@@ -4,6 +4,7 @@ var vfs = require('vinyl-fs');
 var fs = require('graceful-fs');
 var through2 = require('through2');
 var cheerio = require('cheerio');
+var juice = require('juice');
 var mkdirp = require('mkdirp');
 var path = require('path');
 var css = require('css');
@@ -18,12 +19,16 @@ var defaults = {
         style: false
     },
     extension: 'css',
+    prefix: '',
     classPrefix: '',
-    idHandling: 'none' // 'none', 'class', 'remove', 'prefix'
+    styledSelectorPrefix: '',
+    idHandling: 'none', // 'none', 'class', 'remove', 'prefix'
+    removeStyleTags: false,
+    inlineURLStyles: true
 };
 
 var cheerioOpts = {
-    xmlMode: true,
+    xmlMode: false,
     lowerCaseTags: false,   // don't change the camelCase tag- and attribute names, since chrome only respects camels!
     lowerCaseAttributeNames: false, // s.a.
     recognizeCDATA: true
@@ -50,7 +55,7 @@ function writeSVG (name, contents, cb) {
 }
 
 function writeCSS (svgPath, contents, cb) {
-    var destination = path.join(opt.out.style, identifier(svgPath) + '.' + opt.extension);
+    var destination = path.join(opt.out.style, opt.prefix + identifier(svgPath) + '.' + opt.extension);
     if (contents) {
         writeFile(destination, contents, cb);
     } else {
@@ -62,7 +67,7 @@ function nestCSS (prefix, contents) {
     var parsed = css.parse(contents);
     _.forEach(parsed.stylesheet.rules, function (rule) {
         rule.selectors = _.map(rule.selectors, function (selector) {
-            return prefix + ' ' + selector;
+            return opt.styledSelectorPrefix + prefix + ' ' + selector;
         });
     });
     return css.stringify(parsed);
@@ -111,6 +116,20 @@ function handleIDs (file) {
     for(var oldId in replacedIds) {
         editedFileContent = editedFileContent.replace('#' + oldId, '#' + replacedIds[oldId]);
     }
+
+
+    if (referencedIds.length >= 0 && opt.inlineURLStyles) {
+        // inline styles referencing ids
+        var regExForSelectorsWithUrls = /(.)*\{(\s)*(\w)*(\s)*:(\s)*url\(('|")*#.+('|")*\)(\s)*;*(\s)*}/g;
+        var selectorsWithUrls = editedFileContent.match(regExForSelectorsWithUrls);
+        editedFileContent = editedFileContent.replace(regExForSelectorsWithUrls, '');
+        if (selectorsWithUrls) {
+            console.log('inline styles', selectorsWithUrls[0]);
+            editedFileContent = juice.inlineContent(editedFileContent, selectorsWithUrls[0], {xmlMode:true});
+        }
+    }
+
+
     file.contents = new Buffer(editedFileContent);
 }
 
@@ -120,10 +139,12 @@ function extractStyle (file) {
     return styleBlocks.text();
 }
 
-function classedSVG (file, styles) {
-    var $ = cheerio.load(file.contents, cheerioOpts);
+function classedSVG (file, styles, removeStyleTags) {
+    var $ = cheerio.load(file.contents, cheerioOpts),
+        styleTags = $('style');
     $('svg').addClass(className(file.path));
-    $('style').text(styles);
+
+    removeStyleTags ? styleTags.remove() : styleTags.text(styles);
     return $.html();
 }
 
@@ -133,13 +154,17 @@ function extractStyles (file, enc, cb) {
     var styleText = nestCSS('.' + className(file.path), extractStyle(file));
 
     if (opt.out.svg) {
-        writeSVG(file.path, new Buffer(classedSVG(file, styleText)), finished);
+        writeSVG(file.path, new Buffer(classedSVG(file, styleText, opt.removeStyleTags)), finished);
     } else {
-        file.contents = new Buffer(classedSVG(file, styleText));
+        file.contents = new Buffer(classedSVG(file, styleText, opt.removeStyleTags));
         finished();
     }
 
-    writeCSS(file.path, (styleText ? new Buffer(styleText) : null), finished);
+    if(opt.out.style) {
+        writeCSS(file.path, (styleText ? new Buffer(styleText) : null), finished);
+    } else {
+        finished();
+    }
 
     this.push(file);
 }
