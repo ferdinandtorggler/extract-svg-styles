@@ -1,6 +1,6 @@
 {
   "name": "extract-svg-styles",
-  "version": "1.1.4",
+  "version": "1.2.0",
   "description": "Extract SVG element's <style> tags to files.",
   "repository": {
     "type": "git",
