@@ -120,7 +120,7 @@ function handleIDs (file) {
 
     if (referencedIds.length >= 0 && opt.inlineURLStyles) {
         // inline styles referencing ids
-        var regExForSelectorsWithUrls = /(.)*\{(\s)*(\w)*(\s)*:(\s)*url\(('|")*#.+('|")*\)(\s)*;*(\s)*}/g;
+        var regExForSelectorsWithUrls = /(.)*\{((\s)*(\w)*(\s)*:(\s)*url\(('|")*#.+('|")*\)(\s)*;)*(\s)*\}/g;
         var selectorsWithUrls = editedFileContent.match(regExForSelectorsWithUrls);
         editedFileContent = editedFileContent.replace(regExForSelectorsWithUrls, '');
         if (selectorsWithUrls) {
