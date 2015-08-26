@@ -124,8 +124,10 @@ function handleIDs (file) {
         var selectorsWithUrls = editedFileContent.match(regExForSelectorsWithUrls);
         editedFileContent = editedFileContent.replace(regExForSelectorsWithUrls, '');
         if (selectorsWithUrls) {
-            console.log('inline styles', selectorsWithUrls[0]);
-            editedFileContent = juice.inlineContent(editedFileContent, selectorsWithUrls[0], {xmlMode:true});
+            selectorsWithUrls.forEach(function (elem, idx) {
+                console.log('inline styles', selectorsWithUrls[idx]);
+                editedFileContent = juice.inlineContent(editedFileContent, selectorsWithUrls[idx], {xmlMode: true});
+            });
         }
     }
 
