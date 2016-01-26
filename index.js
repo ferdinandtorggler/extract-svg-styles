@@ -135,10 +135,25 @@ function handleIDs (file) {
     file.contents = new Buffer(editedFileContent);
 }
 
-function extractStyle (file) {
+function extractStyle (file, classNamePrefix) {
     var $ = cheerio.load(file.contents, cheerioOpts);
     var styleBlocks = $('style');
-    return styleBlocks.text();
+
+    var styleToClassname = {};//todo: handle cases like 'constructor' or 'toString'
+    var freeClassNumber = 0;
+    $('[style]').each(function (index, item) {
+        var $item = $(item);
+        var style = $item.attr('style');
+        if(!styleToClassname.hasOwnProperty(style)){
+            styleToClassname[style]= classNamePrefix + freeClassNumber++;
+        }
+        var componentClassName = styleToClassname[style];
+        $item.removeAttr('style');
+    });
+    file.contents = new Buffer($.html());
+    return styleBlocks.text()+_.map(styleToClassname,function(className,style){
+        return '.' + className + '{' + style + '}';
+    }).join('\n');
 }
 
 function classedSVG (file, styles, removeStyleTags) {
@@ -153,7 +168,8 @@ function classedSVG (file, styles, removeStyleTags) {
 function extractStyles (file, enc, cb) {
     var finished = _.after(2, cb);
     handleIDs(file);
-    var styleText = nestCSS('.' + className(file.path), extractStyle(file));
+    var iconClassName = className(file.path);
+    var styleText = nestCSS('.' + iconClassName, extractStyle(file,iconClassName + '--'));//todo: make -- configurable
 
     if (opt.out.svg) {
         writeSVG(file.path, new Buffer(classedSVG(file, styleText, opt.removeStyleTags)), finished);
