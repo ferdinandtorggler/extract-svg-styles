@@ -149,9 +149,10 @@ function extractStyle (file, classNamePrefix) {
         }
         var componentClassName = styleToClassname[style];
         $item.removeAttr('style');
+        $item.addClass(componentClassName);
     });
     file.contents = new Buffer($.html());
-    return styleBlocks.text()+_.map(styleToClassname,function(className,style){
+    return styleBlocks.text().replace(/<!\[CDATA\[([^\]]+)]\]>/ig, "$1")+_.map(styleToClassname,function(className,style){
         return '.' + className + '{' + style + '}';
     }).join('\n');
 }
