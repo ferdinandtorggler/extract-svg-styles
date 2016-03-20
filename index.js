@@ -124,7 +124,8 @@ function handleIDs (file) {
 
     editedFileContent = $.html();
     for(var oldId in replacedIds) {
-        editedFileContent = editedFileContent.replace('#' + oldId, '#' + replacedIds[oldId]);
+        regEx = new RegExp('#' + oldId, 'g');
+        editedFileContent = editedFileContent.replace(regEx, '#' + replacedIds[oldId]);
     }
 
 
