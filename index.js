@@ -31,7 +31,8 @@ var cheerioOpts = {
     xmlMode: false,
     lowerCaseTags: false,   // don't change the camelCase tag- and attribute names, since chrome only respects camels!
     lowerCaseAttributeNames: false, // s.a.
-    recognizeCDATA: true
+    recognizeCDATA: true,
+    recognizeSelfClosing: true
 };
 
 // File name without extension
