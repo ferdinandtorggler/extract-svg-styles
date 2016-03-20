@@ -82,14 +82,23 @@ function prefixIdOfElem ($elem, id, file, replacedIds) {
 
 function handleIDs (file) {
     if (opt.idHandling === 'none') return;
-    var referencedIds = file.contents.toString().match(/url\(('|")*#.+('|")*\)/g) || [];
+    var fileContent = file.contents.toString();
+    var referencedIds = fileContent.match(/url\(('|")*#.+('|")*\)/g) || [];
+    var linkedIds = fileContent.match(/xlink\:href\=('|")*#.+('|")/g) || [];
     var replacedIds = {};
     var editedFileContent;
     var $ = cheerio.load(file.contents, cheerioOpts);
+    var regEx;
     referencedIds.forEach(function (elem, idx, arr) {
         elem =  elem.replace(/url\(('|")*#/g, '');
         arr[idx] = elem.replace(/('|")*\)/g, '');
     });
+    linkedIds.forEach(function (elem, idx, arr) {
+        elem =  elem.replace(/xlink\:href\=('|")*#/g, '');
+        arr[idx] = elem.replace(/('|")+/g, '');
+        referencedIds.push(arr[idx]);
+    });
+    
     $('[id]').each(function (index, item) {
         var $item = $(item);
         var id = $item.attr('id');
